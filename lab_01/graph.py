@@ -24,16 +24,18 @@ class Graph(Canvas):
     right_panel_points: list[Point]
     cursor_catch_radius = 10
     moving_point: Point | None
+    grid_line_color: str
 
-    def __init__(self, master: Tk | Frame, width, height):
-        super().__init__(master, width=height, height=height)
+    def __init__(self, master: Tk | Frame, width, height, config: Config):
+        super().__init__(master, width=width, height=height)
         self.bind('<ButtonPress-1>', lambda event: self.cursor_dragging(event, 'press'))
         self.bind('<B1-Motion>', lambda event: self.cursor_dragging(event, 'move'))
         self.bind('<ButtonRelease-1>', lambda event: self.cursor_dragging(event, 'release'))
 
-        self.config = Config()
-        self.config.set_parameters()
+        self.config = config
         self.dot_radius = self.config.fields.get("point_radius")
+        super().configure(bg=self.config.fields.get("graph_bg_color"))
+        self.grid_line_color = self.config.fields.get("grid_line_color")
 
         self.anchor_points = list()
         self.min_offset = Vector(50, 50)
@@ -148,6 +150,8 @@ class Graph(Canvas):
                          fill="red", width=3, arrow=LAST)
 
         if abs(self.max_diff) < self.epsilon:
+            self.create_line(self.canvas_width // 2, self.canvas_height, self.canvas_width // 2, 0, width=2,
+                             fill=self.grid_line_color)
             self.create_line(self.canvas_width // 2, self.canvas_height - self.offset.y - 5, self.canvas_width // 2,
                              self.canvas_height - self.offset.y + 5, width=2)
             print_precision = min(self.precision, 3)
@@ -159,6 +163,8 @@ class Graph(Canvas):
 
             self.create_text(self.canvas_width // 2, self.canvas_height - self.offset.y + 30, text=num_str)
 
+            self.create_line(0, self.canvas_height // 2, self.canvas_width, self.canvas_height // 2, width=1,
+                             fill=self.grid_line_color)
             self.create_line(self.offset.x - 5, self.canvas_height // 2, self.offset.x + 5,
                              self.canvas_height // 2, width=2)
             print_precision = min(self.precision, 3)
@@ -175,6 +181,8 @@ class Graph(Canvas):
         i = self.min_point[0] - self.min_point[0] % max_step
         x = self.real_to_canvas_x(i)
         while x < self.canvas_width:
+            if abs(x - self.offset.x) > 1:
+                self.create_line(x, 0, x, self.canvas_height, width=2, fill=self.grid_line_color)
             self.create_line(x, self.canvas_height - self.offset.y - 5,
                              x, self.canvas_height - self.offset.y + 5, width=2)
             print_precision = min(self.precision, 3)
@@ -191,6 +199,8 @@ class Graph(Canvas):
         i = self.min_point[1] - self.min_point[1] % max_step
         y = self.real_to_canvas_y(i)
         while y > 0:
+            if abs(y - (self.canvas_height - self.offset.y)) > 1:
+                self.create_line(0, y, self.canvas_width, y, width=1, fill=self.grid_line_color)
             self.create_line(self.offset.x - 5, y, self.offset.x + 5, y, width=2)
             print_precision = min(self.precision, 3)
             abs_val = abs(i)
@@ -210,8 +220,9 @@ class Graph(Canvas):
         dec_power = min_round(raw_dec_power)
         step = 10 ** dec_power
 
-        if diff / step <= 1:
-            return step / 10
+        # print(diff/step)
+        while diff / step <= 2:
+            step /= 10
         return step
 
     def to_real_x(self, canvas_x: float) -> float:

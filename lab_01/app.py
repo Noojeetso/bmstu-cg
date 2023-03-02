@@ -5,6 +5,7 @@ from graph import Graph
 from panel import Panel
 from storage import PointTable, Point
 from tkinter import messagebox
+from config import Config
 
 LEFT_PANEL = "left_panel"
 RIGHT_PANEL = "right_panel"
@@ -17,9 +18,11 @@ class App(Tk):
     precision = 3
     epsilon = 1e-3
     graph: Graph
+    config: Config
 
     def __init__(self):
         super().__init__()
+
         self.geometry("1150x510")
         self.update()
         self.width = self.winfo_width()
@@ -28,6 +31,10 @@ class App(Tk):
 
         self.title("CG Lab 01")
         self.bind('<Configure>', lambda event: self.resize())
+
+        self.config = Config()
+        self.tk_setPalette(background=self.config.fields.get("bg_color"),
+                           activeBackground=self.config.fields.get("active_bg_color"))
 
         top_panel = Frame(self)
         top_panel.pack(side=TOP, expand=False, fill=BOTH)
@@ -38,20 +45,21 @@ class App(Tk):
         self.precision_box_var = StringVar()
         self.precision_box_var.set(str(self.precision))
         self.precision_box = Spinbox(top_panel, from_=0, to=5, textvariable=self.precision_box_var,
-                                     command=self.change_precision)
+                                     command=self.change_precision, bg=self.config.fields.get("field_color"))
         self.precision_box.pack(side=LEFT, expand=False, fill=BOTH)
-        solve_button = Button(top_panel, text="Solve")
+        solve_button = Button(top_panel, text="Solve", bg=self.config.fields.get("fg_color"),
+                              activebackground=self.config.fields.get("active_bg_color"))
         solve_button.pack(side=RIGHT, expand=True, fill=BOTH)
 
-        self.left_panel = Panel(LEFT, self.precision)
+        self.left_panel = Panel(LEFT, self.precision, self.config)
         self.left_panel.bind("<<OnAppend>>", lambda event: self.on_append(LEFT_PANEL))
         self.left_panel.bind("<<OnRemove>>", lambda event: self.on_remove())
         self.left_panel.bind("<<OnMove>>", lambda event: self.on_move())
 
-        self.graph = Graph(self, self.height, self.height)
+        self.graph = Graph(self, self.height, self.height, self.config)
         self.graph.pack(side=LEFT, expand=True, fill=BOTH)
 
-        self.right_panel = Panel(RIGHT, self.precision)
+        self.right_panel = Panel(RIGHT, self.precision, self.config)
         self.right_panel.bind("<<OnAppend>>", lambda event: self.on_append(RIGHT_PANEL))
         self.right_panel.bind("<<OnRemove>>", lambda event: self.on_remove())
         self.right_panel.bind("<<OnMove>>", lambda event: self.on_move())

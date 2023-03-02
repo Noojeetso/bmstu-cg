@@ -1,5 +1,8 @@
 from tkinter import *
+from tkinter import ttk
+
 from storage import Point
+from config import Config
 
 
 class PointFrame(Frame):
@@ -7,9 +10,10 @@ class PointFrame(Frame):
     point: Point
     widgets: list[Widget]
 
-    def __init__(self, master: Frame, point: Point):
+    def __init__(self, master: Frame, point: Point, config: Config):
         super().__init__(master)
 
+        self.config = config
         self.point = point
         self.widgets = list()
 
@@ -19,7 +23,8 @@ class PointFrame(Frame):
         content_frame.pack(side=RIGHT, expand=True, fill=BOTH)
         self.widgets.append(content_frame)
 
-        delete_button = Button(self, text='Delete', width=7)
+        delete_button = Button(self, text='Delete', width=7, bg=config.fields.get("fg_color"),
+                               activebackground=config.fields.get("active_bg_color"))
         delete_button.pack(side=RIGHT, fill=BOTH)
         self.widgets.append(delete_button)
 
@@ -61,9 +66,11 @@ class PointFrame(Frame):
 
         for i, symbol in enumerate("xy"):
             if symbol == 'x':
-                input_field = Entry(coordinates_frame, width=5, textvariable=self.point.x_var)
+                input_field = Entry(coordinates_frame, width=5, textvariable=self.point.x_var,
+                                    bg=self.config.fields.get("field_color"))
             else:
-                input_field = Entry(coordinates_frame, width=5, textvariable=self.point.y_var)
+                input_field = Entry(coordinates_frame, width=5, textvariable=self.point.y_var,
+                                    bg=self.config.fields.get("field_color"))
 
             input_field.pack(side=LEFT, expand=True, fill=BOTH)
             input_field.bind('<KeyRelease>',
@@ -77,9 +84,10 @@ class Panel(Frame):
     point_frames: list[PointFrame]
     precision: int
 
-    def __init__(self, side, precision):
+    def __init__(self, side, precision, config: Config):
         super().__init__()
 
+        self.config = config
         self.points = list()
         self.point_frames = list()
         self.precision = precision
@@ -97,17 +105,18 @@ class Panel(Frame):
         x_var = DoubleVar()
         y_var = DoubleVar()
 
-        add_point = Button(coordinates_frame, text="➕ New point",
+        add_point = Button(coordinates_frame, text="➕ New point", bg=config.fields.get("fg_color"),
+                           activebackground=config.fields.get("active_bg_color"),
                            command=lambda: self.create_point_frame(x_var.get(), y_var.get()))
         add_point.pack(side=LEFT, expand=False, fill=BOTH)
 
         for i, symbol in enumerate("xy"):
             if symbol == 'x':
-                input_field = Entry(coordinates_frame, textvariable=x_var, width=3)
-                label = Label(coordinates_frame, text="X:")
+                input_field = Entry(coordinates_frame, textvariable=x_var, width=3, bg=config.fields.get("field_color"))
+                label = Label(coordinates_frame, text="X:", bg=config.fields.get("bg_color"))
             else:
-                input_field = Entry(coordinates_frame, textvariable=y_var, width=3)
-                label = Label(coordinates_frame, text="Y:")
+                input_field = Entry(coordinates_frame, textvariable=y_var, width=3, bg=config.fields.get("field_color"))
+                label = Label(coordinates_frame, text="Y:", bg=config.fields.get("bg_color"))
 
             label.pack(side=LEFT, expand=False, fill=BOTH)
             input_field.pack(side=LEFT, expand=True, fill=BOTH)
@@ -115,8 +124,9 @@ class Panel(Frame):
         # CREATE SCROLLBAR for POINTS coordinates
         self.points_coordinates_container = Frame(points_panel)
 
-        points_coordinates_canvas = Canvas(self.points_coordinates_container, width=1440 * 0.2, height=700)
-        scrollbar = Scrollbar(self.points_coordinates_container,
+        points_coordinates_canvas = Canvas(self.points_coordinates_container, width=1440 * 0.2, height=700,
+                                           bg=self.config.fields.get("bg_color"))
+        scrollbar = Scrollbar(self.points_coordinates_container, bg=config.fields.get("fg_color"),
                               orient="vertical", command=points_coordinates_canvas.yview)
 
         self.points_coordinates_frame = Frame(points_coordinates_canvas)
@@ -138,7 +148,7 @@ class Panel(Frame):
         point = Point(x, y)
 
         self.points.append(point)
-        point_frame = PointFrame(self.points_coordinates_frame, point)
+        point_frame = PointFrame(self.points_coordinates_frame, point, self.config)
         self.point_frames.append(point_frame)
         point_frame.bind("<<OnRemove>>", lambda event: self.remove_point_frame(point_frame))
         point_frame.bind("<<OnMove>>", lambda event: self.move_point(point_frame))
