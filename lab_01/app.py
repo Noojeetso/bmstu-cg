@@ -160,8 +160,9 @@ class App(Tk):
 
         if panel == RIGHT_PANEL:
             new_point = self.right_panel.points[-1]
-            points = itertools.chain(self.left_panel.points, self.right_panel.points[:-1])
-            for point in points:
+            for i in range(len(self.right_panel.points) - 1):
+                point = self.right_panel.points[i]
+
                 if self.points_equal(point, new_point, self.epsilon):
                     self.right_panel.remove_point_frame(self.right_panel.point_frames[-1])
                     messagebox.showwarning('Ошибка создания точки',
@@ -170,8 +171,9 @@ class App(Tk):
             self.right_panel.update_indices()
         elif panel == LEFT_PANEL:
             new_point = self.left_panel.points[-1]
-            points = itertools.chain(self.right_panel.points, self.left_panel.points[:-1])
-            for point in points:
+            for i in range(len(self.left_panel.points) - 1):
+                point = self.left_panel.points[i]
+
                 if self.points_equal(point, new_point, self.epsilon):
                     self.left_panel.remove_point_frame(self.left_panel.point_frames[-1])
                     messagebox.showwarning('Ошибка создания точки',
