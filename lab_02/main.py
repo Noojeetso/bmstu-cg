@@ -1,9 +1,6 @@
-# This Python file uses the following encoding: utf-8
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QMessageBox
-from PyQt5 import QtCore, QtGui, QtWidgets
 from form import Ui_MainWindow
-from graph import Graph
 from storage import Point, IntVector, FloatVector, Figure
 
 
@@ -12,7 +9,6 @@ class MainWindow(QMainWindow):
     height: int
     precision = 3
     epsilon = 1e-3
-    # config: Config
 
     def __init__(self):
         super().__init__()
@@ -109,7 +105,7 @@ class MainWindow(QMainWindow):
                                             "Y - смещение по оси ординат")
 
     def rotation_info(self):
-        QMessageBox.about(self, "Поворот", "Угол - угол поворота в градусах (вращение по часовой стрелке)\n"
+        QMessageBox.about(self, "Поворот", "Угол - угол поворота в градусах (вращение против часовой стрелке)\n"
                                            "X - абсцисса центра вращения\n"
                                            "Y - ордината центра вращения")
 
@@ -130,16 +126,19 @@ class MainWindow(QMainWindow):
                                                " - Масштабирование относительно точки\n"
                                                "Фигура состоит из:\n"
                                                "Астроиды:\n"
-                                               " - уравнение:\n"
+                                               " - уравнения:\n"
                                                "\t x = cos(t) ^ 3 * r\n"
                                                "\t y = sin(t) ^ 3 * r\n"
                                                "Окружности:\n"
-                                               " - уравнение:\n"
+                                               " - уравнения:\n"
                                                "\t x = sin(t) * r / 3\n"
                                                "\t y = cos(t) * r / 3\n"
                                                "Трёх прямых, каждая длиной 2 * r,\n"
                                                "образующих квадрат без верхнего ребра,\n"
-                                               "прчём две из прямых касаются концов астроиды справа и слева")
+                                               "причём две из прямых касаются концов астроиды справа и слева\n"
+                                               "r - значение радиуса\n"
+                                               "Ось абсцисс направлена слева направо\n"
+                                               "Ось ординат направлена снизу вверх")
 
     def connect(self):
         self.ui.apply_local_transition.clicked.connect(self.transit)

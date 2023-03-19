@@ -186,10 +186,6 @@ class Figure:
     def move(self, diff_x: float, diff_y: float):
         self.write_history()
 
-        # points = self.get_points()
-        # for point in points:
-        #     point.move(diff_x, diff_y)
-
         move_matrix = np.array([[1, 0, diff_x], [0, 1,  diff_y], [0, 0, 1]])
 
         points = self.get_points()
@@ -198,12 +194,6 @@ class Figure:
 
     def scale(self, center: FloatVector, scale: FloatVector):
         self.write_history()
-
-        # points = self.get_points()
-        # for point in points:
-        #     new_x = float(center.x + (point.x - center.x) * scale.x)
-        #     new_y = float(center.y + (point.y - center.y) * scale.y)
-        #     point.move_to(new_x, new_y)
 
         center.x *= -1
         center.y *= -1
@@ -221,17 +211,6 @@ class Figure:
 
     def rotate(self, center: FloatVector, angle_degrees: float):
         self.write_history()
-
-        # sin_a = math.sin(to_radians(angle_degrees))
-        # cos_a = math.cos(to_radians(angle_degrees))
-        #
-        # points = self.get_points()
-        # for point in points:
-        #     rotation_x = point.x - center.x
-        #     rotation_y = point.y - center.y
-        #     new_x = float(center.x + rotation_x * cos_a - rotation_y * sin_a)
-        #     new_y = float(center.y + rotation_y * cos_a + rotation_x * sin_a)
-        #     point.move_to(new_x, new_y)
 
         center.x *= -1
         center.y *= -1
