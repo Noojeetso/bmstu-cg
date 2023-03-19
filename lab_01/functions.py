@@ -1,21 +1,33 @@
-import math
 from math import sqrt, ceil, floor
+from storage import Circle, Point
 
 
-def define_circle(p1, p2, p3, epsilon) -> tuple[tuple[float, float], float]:
-    temp = p2[0] * p2[0] + p2[1] * p2[1]
-    bc = (p1[0] * p1[0] + p1[1] * p1[1] - temp) / 2
-    cd = (temp - p3[0] * p3[0] - p3[1] * p3[1]) / 2
-    det = (p1[0] - p2[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p2[1])
+def define_circle(a, b, c, epsilon) -> Circle:
+    b_radius_squared = b.x * b.x + b.y * b.y
+    a_radius_squared = a.x * a.x + a.y * a.y
+    c_radius_squared = c.x * c.x + c.y * c.y
+    ab = (a_radius_squared - b_radius_squared) / 2
+    bc = (b_radius_squared - c_radius_squared) / 2
 
-    if abs(det) < epsilon:
-        return (float("nan"), float("nan"), ), float("nan")
+    ba_x = a.x - b.x
+    ba_y = a.y - b.y
+    cb_x = b.x - c.x
+    cb_y = b.y - c.y
+    skew_product = ba_x * cb_y - cb_x * ba_y
 
-    cx = (bc * (p2[1] - p3[1]) - cd * (p1[1] - p2[1])) / det
-    cy = ((p1[0] - p2[0]) * cd - (p2[0] - p3[0]) * bc) / det
+    if abs(skew_product) < epsilon:
+        raise ValueError
 
-    radius = sqrt((cx - p1[0]) ** 2 + (cy - p1[1]) ** 2)
-    return (cx, cy), radius
+    cb_y = b.y - c.y
+    ba_y = a.y - b.y
+    center_x = (ab * cb_y - bc * ba_y) / skew_product
+    ba_x = a.x - b.x
+    cb_x = b.x - c.x
+    center_y = (ba_x * bc - cb_x * ab) / skew_product
+
+    radius = sqrt((center_x - a.x) ** 2 + (center_y - a.y) ** 2)
+
+    return Circle(center_x, center_y, radius)
 
 
 def min_round(num: float) -> float:
@@ -24,60 +36,64 @@ def min_round(num: float) -> float:
     return floor(num)
 
 
-def circle_in_ans(ans, src_circle, epsilon: float):
-    for circle in ans:
-        if abs(circle[0][0] - src_circle[0][0]) >= epsilon or \
-           abs(circle[0][1] - src_circle[0][1]) >= epsilon or \
-           abs(circle[1] - src_circle[1]) >= epsilon:
-            continue
-        return True
-    return False
+def circle_in_ans(circles: list[Circle], new_circle: Circle, epsilon: float):
+    return any(circle.is_equal(new_circle, epsilon) for circle in circles)
 
 
-def solve(left_points, right_points, epsilon: float):
-    circles: list[tuple[tuple[float, float], float]] = list()
-    for p1 in left_points:
-        for p2 in left_points:
-            for p3 in left_points:
-                circle_left = define_circle([p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y], epsilon)
-                if math.isnan(circle_left[1]):
-                    continue
-                if circle_in_ans(circles, circle_left, epsilon):
-                    continue
-                # print("circle left", circle_left)
-                circles.append(circle_left)
-    for p1 in right_points:
-        for p2 in right_points:
-            for p3 in right_points:
-                circle_right = define_circle([p1.x, p1.y], [p2.x, p2.y], [p3.x, p3.y], epsilon)
-                if math.isnan(circle_right[1]):
-                    continue
-                if circle_in_ans(circles, circle_right, epsilon):
-                    continue
-                # print("circle right", circle_right)
-                circles.append(circle_right)
+def get_circles(points: list[Point], epsilon: float) -> list[Circle]:
+    circles: list[Circle] = list()
+    for i in range(len(points)):
+        for j in range(i + 1, len(points)):
+            for k in range(j + 1, len(points)):
+                p1 = points[i]
+                p2 = points[j]
+                p3 = points[k]
 
+                try:
+                    circle = define_circle(p1, p2, p3, epsilon)
+                except ValueError:
+                    continue
+                if circle_in_ans(circles, circle, epsilon):
+                    continue
+
+                circles.append(circle)
+    return circles
+
+
+def filter_circles(circles: list[Circle], epsilon: float) -> tuple[list[Circle], list[float]]:
     used_circles = []
     line_heights = []
     for i in range(len(circles)):
         for j in range(i + 1, len(circles)):
             circle_a = circles[i]
             circle_b = circles[j]
-            if abs(circle_a[0][1] + circle_a[1] - (circle_b[0][1] + circle_b[1])) < epsilon:
-                line_heights.append(circle_a[0][1] + circle_a[1])
-                used_circles.append(circle_a)
-                used_circles.append(circle_b)
-            if abs(circle_a[0][1] + circle_a[1] - (circle_b[0][1] - circle_b[1])) < epsilon:
-                line_heights.append(circle_a[0][1] + circle_a[1])
-                used_circles.append(circle_a)
-                used_circles.append(circle_b)
-            if abs(circle_a[0][1] - circle_a[1] - (circle_b[0][1] + circle_b[1])) < epsilon:
-                line_heights.append(circle_a[0][1] - circle_a[1])
-                used_circles.append(circle_a)
-                used_circles.append(circle_b)
-            if abs(circle_a[0][1] - circle_a[1] - (circle_b[0][1] - circle_b[1])) < epsilon:
-                line_heights.append(circle_a[0][1] - circle_a[1])
-                used_circles.append(circle_a)
-                used_circles.append(circle_b)
+            circle_added = False
+            if abs(circle_a.y + circle_a.radius - (circle_b.y + circle_b.radius)) < epsilon:
+                if not circle_in_ans(used_circles, circle_a, epsilon):
+                    used_circles.append(circle_a)
+                    circle_added = True
+                if not circle_in_ans(used_circles, circle_b, epsilon):
+                    used_circles.append(circle_b)
+                    circle_added = True
+                if circle_added:
+                    line_heights.append(circle_a.y + circle_a.radius)
 
+            if abs(circle_a.y - circle_a.radius - (circle_b.y - circle_b.radius)) < epsilon:
+                if not circle_in_ans(used_circles, circle_a, epsilon):
+                    used_circles.append(circle_a)
+                    circle_added = True
+                if not circle_in_ans(used_circles, circle_b, epsilon):
+                    used_circles.append(circle_b)
+                    circle_added = True
+                if circle_added:
+                    line_heights.append(circle_a.y - circle_a.radius)
+
+    return used_circles, line_heights
+
+
+def solve(left_points: list[Point], right_points: list[Point], epsilon: float) -> tuple[list[Circle], list[Circle], list[float]]:
+    circles: list[Circle]
+    circles = get_circles(left_points, epsilon)
+    circles.extend(get_circles(right_points, epsilon))
+    used_circles, line_heights = filter_circles(circles, epsilon)
     return circles, used_circles, line_heights

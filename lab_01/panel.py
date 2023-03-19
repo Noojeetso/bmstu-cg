@@ -8,25 +8,25 @@ from config import Config
 class PointFrame(Frame):
     """ Frame that store point coordinates """
     point: Point
-    widgets: list[Widget]
+    # widgets: list[Widget]
 
     def __init__(self, master: Frame, point: Point, config: Config):
         super().__init__(master)
 
         self.config = config
         self.point = point
-        self.widgets = list()
+        # self.widgets = list()
 
         self.pack(side=TOP, expand=True, fill=BOTH)
 
         content_frame = Frame(self)
         content_frame.pack(side=RIGHT, expand=True, fill=BOTH)
-        self.widgets.append(content_frame)
+        # self.widgets.append(content_frame)
 
-        delete_button = Button(self, text='Delete', width=7, bg=config.fields.get("fg_color"),
+        delete_button = Button(self, text='Удалить', width=7, bg=config.fields.get("fg_color"),
                                activebackground=config.fields.get("active_bg_color"))
         delete_button.pack(side=RIGHT, fill=BOTH)
-        self.widgets.append(delete_button)
+        # self.widgets.append(delete_button)
 
         self.create_x_y_input(content_frame)
 
@@ -37,11 +37,11 @@ class PointFrame(Frame):
         self.event_generate("<<OnRemove>>")
         # self.destroy()
 
-    def destroy(self):
-        """ Destroy point panel frame """
-        for widget in self.widgets:
-            widget.destroy()
-        super().destroy()
+    # def destroy(self):
+    #     """ Destroy point panel frame """
+    #     for widget in self.widgets:
+    #         widget.destroy()
+    #     super().destroy()
 
     def update_coordinate(self, symbol, event):
         """ Update coordinates from input fields """
@@ -50,19 +50,19 @@ class PointFrame(Frame):
             value = float(str_value)
         except ValueError:
             return
-        if symbol == 'x':
-            self.point.x = value
-        elif symbol == 'y':
-            self.point.y = value
-        else:
-            return
+        # if symbol == 'x':
+        #     self.point.x_var.set(value)
+        # elif symbol == 'y':
+        #     self.point.y = value
+        # else:
+        #     return
         self.event_generate("<<OnMove>>")
 
     def create_x_y_input(self, master: Frame):
         """ Create point panel frame """
         coordinates_frame = Frame(master)
         coordinates_frame.pack(side=TOP, expand=True, fill=BOTH)
-        self.widgets.append(coordinates_frame)
+        # self.widgets.append(coordinates_frame)
 
         for i, symbol in enumerate("xy"):
             if symbol == 'x':
@@ -73,10 +73,10 @@ class PointFrame(Frame):
                                     bg=self.config.fields.get("field_color"))
 
             input_field.pack(side=LEFT, expand=True, fill=BOTH)
-            input_field.bind('<KeyRelease>',
+            input_field.bind('<FocusOut>',
                              lambda event, symbol_=symbol:
                              self.update_coordinate(symbol_, event))
-            self.widgets.append(input_field)
+            # self.widgets.append(input_field)
 
 
 class Panel(Frame):
@@ -105,7 +105,7 @@ class Panel(Frame):
         x_var = DoubleVar()
         y_var = DoubleVar()
 
-        add_point = Button(coordinates_frame, text="➕ New point", bg=config.fields.get("fg_color"),
+        add_point = Button(coordinates_frame, text="➕ Добавить точку", bg=config.fields.get("fg_color"),
                            activebackground=config.fields.get("active_bg_color"),
                            command=lambda: self.create_point_frame(x_var.get(), y_var.get()))
         add_point.pack(side=LEFT, expand=False, fill=BOTH)
@@ -162,8 +162,16 @@ class Panel(Frame):
 
     def move_point(self, point_frame: PointFrame):
         index = self.point_frames.index(point_frame)
-        point_frame.point.x = round(point_frame.point.x, self.precision)
-        point_frame.point.y = round(point_frame.point.y, self.precision)
-        point_frame.point.x_var.set(point_frame.point.x)
-        point_frame.point.y_var.set(point_frame.point.y)
+        new_x_var = point_frame.point.x_var.get()
+        new_y_var = point_frame.point.y_var.get()
+        new_x_var = round(new_x_var, self.precision)
+        new_y_var = round(new_y_var, self.precision)
+        point_frame.point.x_var.set(new_x_var)
+        point_frame.point.y_var.set(new_y_var)
         self.event_generate("<<OnMove>>", state=index)
+
+    def update_indices(self):
+        index = 0
+        for point in self.points:
+            point.index = index
+            index += 1

@@ -3,7 +3,7 @@ from math import log
 from tkinter import *
 
 from functions import min_round
-from storage import Point, Vector
+from storage import Point, Vector, Circle
 from config import Config
 
 
@@ -20,11 +20,14 @@ class Graph(Canvas):
     epsilon = 1e-3
     cursor_point: Point
     anchor_points: list[Point]
+    center_points: list[Point]
     left_panel_points: list[Point]
     right_panel_points: list[Point]
     cursor_catch_radius = 10
     moving_point: Point | None
     grid_line_color: str
+    circles: list[Circle]
+    lines_heights: list[float]
 
     def __init__(self, master: Tk | Frame, width, height, config: Config):
         super().__init__(master, width=width, height=height)
@@ -38,8 +41,12 @@ class Graph(Canvas):
         self.grid_line_color = self.config.fields.get("grid_line_color")
 
         self.anchor_points = list()
+        self.center_points = list()
         self.min_offset = Vector(50, 50)
         self.offset = Vector(0, 0)
+
+        self.circles = list()
+        self.lines_heights = list()
 
         self.cursor_point = Point(0, 0)
         self.cursor_point.visible = False
@@ -95,18 +102,25 @@ class Graph(Canvas):
     def draw(self):
         """ Redraw graph on canvas """
         self.clear_graph()
-
-        if len(self.right_panel_points) == 0 and \
-           len(self.left_panel_points) == 0:
-            return
-
         self.draw_graph()
 
     def clear_graph(self):
         self.delete("all")
 
+    def set_circles(self, circles: list[Circle], lines_heights: list[float]):
+        self.circles = circles
+        self.lines_heights = lines_heights
+
     def draw_graph(self):
         self.draw_axes()
+
+        self.anchor_points = list()
+        self.center_points = list()
+
+        for circle in self.circles:
+            self.add_circle_anchors(circle.x, circle.y, circle.radius)
+
+        self.update_min_max_points()
 
         python_green = "#476042"
         python_salmon = "#ff5733"
@@ -131,12 +145,21 @@ class Graph(Canvas):
             self.create_text(canvas_x, canvas_y - 10, text=str(point),
                              fill="black", font=("Courier New", 10))
 
-        for i, point in enumerate(self.anchor_points):
+        for i, point in enumerate(self.center_points):
             canvas_x = self.real_to_canvas_x(point.x)
             canvas_y = self.real_to_canvas_y(point.y)
 
             self.create_oval(canvas_x - meta_radius, canvas_y - meta_radius,
                              canvas_x + meta_radius, canvas_y + meta_radius, fill="black")
+            point_str = "[{1:.{0}3g}; {2:.{0}g}]".format(min(self.precision, 3), point.x, point.y)
+            self.create_text(canvas_x, canvas_y - 10, text=point_str,
+                             fill="black", font=("Courier New", 10))
+
+        for circle in self.circles:
+            self.draw_circle(circle.x, circle.y, circle.radius)
+
+        for line_height in self.lines_heights:
+            self.draw_line(line_height)
 
     def draw_axes(self):
         diff_x = self.max_point[0] - self.min_point[0]
@@ -149,25 +172,57 @@ class Graph(Canvas):
         self.create_line(0, self.canvas_height - self.offset.y, self.canvas_width, self.canvas_height - self.offset.y,
                          fill="red", width=3, arrow=LAST)
 
-        if abs(self.max_diff) < self.epsilon:
+        if not self.left_panel_points and not self.right_panel_points:
+            self.create_line(self.canvas_width // 2, self.canvas_height - self.offset.y - 5, self.canvas_width // 2,
+                             self.canvas_height - self.offset.y + 5, width=2)
+            self.create_line(self.offset.x - 5, self.canvas_height // 2, self.offset.x + 5,
+                             self.canvas_height // 2, width=2)
+            self.create_line(self.canvas_width // 2, self.canvas_height, self.canvas_width // 2, 0, width=2,
+                             fill=self.grid_line_color)
+            self.create_line(0, self.canvas_height // 2, self.canvas_width, self.canvas_height // 2, width=1,
+                             fill=self.grid_line_color)
+            num_str = "0"
+            self.create_text(self.offset.x - 30, self.canvas_height // 2, text=num_str)
+            self.create_text(self.canvas_width // 2, self.canvas_height - self.offset.y + 30, text=num_str)
+            return
+
+        if abs(self.max_point[0] - self.min_point[0]) < self.epsilon / 2:
             self.create_line(self.canvas_width // 2, self.canvas_height, self.canvas_width // 2, 0, width=2,
                              fill=self.grid_line_color)
             self.create_line(self.canvas_width // 2, self.canvas_height - self.offset.y - 5, self.canvas_width // 2,
                              self.canvas_height - self.offset.y + 5, width=2)
-            print_precision = min(self.precision, 3)
+            print_precision = min(self.precision, 3) + 1
             abs_val = abs(self.min_point[0])
             if abs_val >= self.epsilon:
                 num_str = "{0:.{1:}g}".format(self.min_point[0], print_precision)
             else:
                 num_str = "0"
-
             self.create_text(self.canvas_width // 2, self.canvas_height - self.offset.y + 30, text=num_str)
+        else:
+            i = self.min_point[0] - self.min_point[0] % max_step
+            x = self.real_to_canvas_x(i)
+            while x < self.canvas_width:
+                if abs(x - self.offset.x) > 1:
+                    self.create_line(x, 0, x, self.canvas_height, width=2, fill=self.grid_line_color)
+                self.create_line(x, self.canvas_height - self.offset.y - 5,
+                                 x, self.canvas_height - self.offset.y + 5, width=2)
+                print_precision = min(self.precision, 3) + 1
+                abs_val = abs(i)
+                if abs_val >= self.epsilon:
+                    num_str = "{0:.{1:}g}".format(i, print_precision)
+                else:
+                    num_str = "0"
 
+                self.create_text(x, self.canvas_height - self.offset.y + 30, text=num_str)
+                i += max_step
+                x = self.real_to_canvas_x(i)
+
+        if abs(self.max_point[1] - self.min_point[1]) < self.epsilon / 2:
             self.create_line(0, self.canvas_height // 2, self.canvas_width, self.canvas_height // 2, width=1,
                              fill=self.grid_line_color)
             self.create_line(self.offset.x - 5, self.canvas_height // 2, self.offset.x + 5,
                              self.canvas_height // 2, width=2)
-            print_precision = min(self.precision, 3)
+            print_precision = min(self.precision, 3) + 1
             abs_val = abs(self.min_point[1])
             if abs_val >= self.epsilon:
                 # num_str = "{0:.{1:}{c}}".format(i, print_precision, c='g' if abs_val > 1e3 or abs_val < 1e-3 else 'g')
@@ -176,58 +231,38 @@ class Graph(Canvas):
                 num_str = "0"
 
             self.create_text(self.offset.x - 30, self.canvas_height // 2, text=num_str)
-            return
-
-        i = self.min_point[0] - self.min_point[0] % max_step
-        x = self.real_to_canvas_x(i)
-        while x < self.canvas_width:
-            if abs(x - self.offset.x) > 1:
-                self.create_line(x, 0, x, self.canvas_height, width=2, fill=self.grid_line_color)
-            self.create_line(x, self.canvas_height - self.offset.y - 5,
-                             x, self.canvas_height - self.offset.y + 5, width=2)
-            print_precision = min(self.precision, 3)
-            abs_val = abs(i)
-            if abs_val >= self.epsilon:
-                num_str = "{0:.{1:}g}".format(i, print_precision)
-            else:
-                num_str = "0"
-
-            self.create_text(x, self.canvas_height - self.offset.y + 30, text=num_str)
-            i += max_step
-            x = self.real_to_canvas_x(i)
-
-        i = self.min_point[1] - self.min_point[1] % max_step
-        y = self.real_to_canvas_y(i)
-        while y > 0:
-            if abs(y - (self.canvas_height - self.offset.y)) > 1:
-                self.create_line(0, y, self.canvas_width, y, width=1, fill=self.grid_line_color)
-            self.create_line(self.offset.x - 5, y, self.offset.x + 5, y, width=2)
-            print_precision = min(self.precision, 3)
-            abs_val = abs(i)
-            if abs_val >= self.epsilon:
-                num_str = "{0:.{1:}g}".format(i, print_precision)
-            else:
-                num_str = "0"
-
-            self.create_text(self.offset.x - 30, y, text=num_str)
-            i += max_step
+        else:
+            i = self.min_point[1] - self.min_point[1] % max_step
             y = self.real_to_canvas_y(i)
+            while y > 0:
+                if abs(y - (self.canvas_height - self.offset.y)) > 1:
+                    self.create_line(0, y, self.canvas_width, y, width=1, fill=self.grid_line_color)
+                self.create_line(self.offset.x - 5, y, self.offset.x + 5, y, width=2)
+                print_precision = min(self.precision, 3) + 1
+                abs_val = abs(i)
+                if abs_val >= self.epsilon:
+                    num_str = "{0:.{1:}g}".format(i, print_precision)
+                else:
+                    num_str = "0"
+                self.create_text(self.offset.x - 30, y, text=num_str)
+                i += max_step
+                y = self.real_to_canvas_y(i)
 
     def get_step(self, diff: float) -> float:
-        if abs(diff) <= self.epsilon:
-            return self.epsilon
+        if abs(diff) <= self.epsilon or abs(diff) == float("inf"):
+            return 1
+        # print(diff)
         raw_dec_power = log(diff) / log(10)
         dec_power = min_round(raw_dec_power)
         step = 10 ** dec_power
 
-        # print(diff/step)
-        while diff / step <= 2:
+        while diff / step <= 2 and step >= self.epsilon:
             step /= 10
         return step
 
     def to_real_x(self, canvas_x: float) -> float:
         graph_width = self.canvas_width - 2 * self.offset.x
-        if abs(graph_width) < self.epsilon:
+        if abs(graph_width) < self.epsilon / 2:
             real_x = self.min_point[0]
         else:
             real_x = (self.max_diff * (canvas_x - self.offset.x) / graph_width) + self.min_point[0]
@@ -235,7 +270,7 @@ class Graph(Canvas):
 
     def to_real_y(self, canvas_y: float) -> float:
         graph_height = self.canvas_height - 2 * self.offset.y
-        if abs(graph_height) < self.epsilon:
+        if abs(graph_height) < self.epsilon / 2:
             real_y = self.min_point[1]
         else:
             real_y = (self.max_diff * (self.canvas_height - self.offset.y - canvas_y) /
@@ -243,7 +278,7 @@ class Graph(Canvas):
         return real_y
 
     def real_to_canvas_x(self, real_x: float) -> int:
-        if abs(self.max_diff) < self.epsilon:
+        if abs(self.max_point[0] - self.min_point[0]) < self.epsilon / 2:
             # print(abs(self.max_diff), self.epsilon)
             return self.canvas_width // 2
 
@@ -253,7 +288,7 @@ class Graph(Canvas):
         return int(canvas_x)
 
     def real_to_canvas_y(self, real_y: float) -> int:
-        if abs(self.max_diff) < self.epsilon:
+        if abs(self.max_point[1] - self.min_point[1]) < self.epsilon / 2:
             return self.canvas_height // 2
 
         relative_y = real_y - self.min_point[1]
@@ -283,6 +318,11 @@ class Graph(Canvas):
         real_x = self.to_real_x(cursor_canvas_x)
         real_y = self.to_real_y(cursor_canvas_y)
 
+        points = itertools.chain(self.left_panel_points, self.right_panel_points)
+        for point in points:
+            if abs(point.x - real_x) < self.epsilon / 2 and abs(point.y - real_y) < self.epsilon / 2:
+                return
+
         self.moving_point.x = round(real_x, self.precision)
         self.moving_point.y = round(real_y, self.precision)
 
@@ -306,7 +346,7 @@ class Graph(Canvas):
         new_point = Point(real_x, real_y - radius)
         self.anchor_points.append(new_point)
         new_point = Point(real_x, real_y)
-        self.anchor_points.append(new_point)
+        self.center_points.append(new_point)
         self.update_min_max_points()
 
     def draw_circle(self, real_x, real_y, radius):
@@ -317,14 +357,3 @@ class Graph(Canvas):
         radius = radius_x - x
 
         self.create_oval(x - radius, y - radius, x + radius, y + radius)
-
-    def draw_circles(self, circles):
-        self.anchor_points = list()
-
-        for circle in circles:
-            self.add_circle_anchors(circle[0][0], circle[0][1], circle[1])
-
-        self.draw()
-
-        for circle in circles:
-            self.draw_circle(circle[0][0], circle[0][1], circle[1])

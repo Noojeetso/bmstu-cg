@@ -8,14 +8,34 @@ class Vector:
         self.y = y
 
 
+class Circle:
+    x: float
+    y: float
+    radius: float
+
+    def __init__(self, x: float, y: float, radius: float):
+        self.x = x
+        self.y = y
+        self.radius = radius
+
+    def is_equal(self, circle: 'Circle', epsilon: float):
+        if abs(circle.x - self.x) < epsilon and \
+           abs(circle.y - self.y) < epsilon and \
+           abs(circle.radius - self.radius) < epsilon:
+            return True
+        return False
+
+
 class Point:
     x: float
     y: float
     x_var: DoubleVar
     y_var: DoubleVar
+    index: int
     visible: bool
 
     def __init__(self, x: float, y: float):
+        self.index = 0
         self.x = x
         self.y = y
         self.x_var = DoubleVar()
@@ -24,7 +44,7 @@ class Point:
         self.y_var.set(self.y)
 
     def __str__(self):
-        return "[" + str(self.x) + ";" + str(self.y) + "]"
+        return str(self.index) + ":[" + str(self.x) + ";" + str(self.y) + "]"
 
     def round(self, precision):
         self.x = round(self.x, precision)
@@ -35,7 +55,7 @@ class Point:
         self.x_var.set(self.x)
         self.y_var.set(self.y)
 
-    def print(self):
+    def print(self, index: int):
         print("{: ^ 10.3f}|{: ^ 10.3f}".format(self.x, self.y))
 
 

@@ -32,7 +32,7 @@ class Config:
                         except ValueError:
                             self.fields.update({key: value})
                         # exec("self." + key + ' = ' + value)
-            print(self.fields.get("grid_line_color"))
+            # print(self.fields.get("grid_line_color"))
             print("config file was read")
 
     def create_config(self):
