@@ -18,8 +18,6 @@ public:
 
     ~GraphicsWidget(){};
 
-    virtual void do_update(void);
-
     Points points;
     Lines lines;
     Point a;

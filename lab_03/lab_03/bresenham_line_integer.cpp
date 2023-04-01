@@ -42,7 +42,7 @@ void _add_line_bresenham_integer(T &manager, const Point &a, const Point &b)
 
     for (int i = 1; i < dx + 1; i++)
     {
-        manager.add_point(a.x, a.y, MAX_INTENSITY);
+        manager.add_point(x, y, 1);
 
         if (f_err >= 0)
         {
@@ -76,12 +76,16 @@ ret_code_t add_line_bresenham_integer(T &manager, const Point &a, const Point &b
 
     if (rc == EXIT_OK)
     {
-        _draw_line_bresenham_integer(manager, a, b);
+        _add_line_bresenham_integer(manager, a, b);
     }
     else
     {
-        manager.add_point(a.x, a.y, MAX_INTENSITY);
+        manager.add_point(a.x, a.y, 1);
     }
 
     return rc;
 }
+
+template ret_code_t add_line_bresenham_integer<Canvas>(Canvas &canvas, const Point &a, const Point &b);
+
+template ret_code_t add_line_bresenham_integer<Points>(Points &points, const Point &a, const Point &b);

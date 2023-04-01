@@ -40,7 +40,7 @@ void _add_line_bresenham_floating_point(T &manager, const Point &a, const Point 
 
     for (int i = 1; i < dx + 1; i++)
     {
-        manager.add_point(x, y, MAX_INTENSITY);
+        manager.add_point(x, y, 1);
 
         if (f_err >= 0)
         {
@@ -74,12 +74,16 @@ ret_code_t add_line_bresenham_floating_point(T &manager, const Point &a, const P
 
     if (rc == EXIT_OK)
     {
-        _draw_line_bresenham_floating_point(manager, a, b);
+        _add_line_bresenham_floating_point(manager, a, b);
     }
     else
     {
-        manager.add_point(a.x, a.y, MAX_INTENSITY);
+        manager.add_point(a.x, a.y, 1);
     }
 
     return rc;
 }
+
+template ret_code_t add_line_bresenham_floating_point<Canvas>(Canvas &canvas, const Point &a, const Point &b);
+
+template ret_code_t add_line_bresenham_floating_point<Points>(Points &points, const Point &a, const Point &b);

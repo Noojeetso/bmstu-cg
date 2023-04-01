@@ -1,20 +1,5 @@
 #include "wu_line.h"
 
-inline int integer_part(double value)
-{
-    return floor(value);
-}
-
-inline double fract_part(double value)
-{
-    return value - floor(value);
-}
-
-inline double right_fract_part(double value)
-{
-    return 1 - fract_part(value);
-}
-
 template<typename T>
 bool _add_line_wu(T &manager, const Point &a, const Point &b)
 {
@@ -47,12 +32,12 @@ bool _add_line_wu(T &manager, const Point &a, const Point &b)
         const int s = get_sign(y);
         if (swapped)
         {
-            manager.add_point(integer_part(y), x, right_fract_part(y));
-            manager.add_point(integer_part(y) + s, x, fract_part(y));
+            manager.add_point(get_integer_part(y), x, get_right_fract_part(y));
+            manager.add_point(get_integer_part(y) + s, x, get_fract_part(y));
         }
         else {
-            manager.add_point(x, integer_part(y), right_fract_part(y));
-            manager.add_point(x, integer_part(y) + s, fract_part(y));
+            manager.add_point(x, get_integer_part(y), get_right_fract_part(y));
+            manager.add_point(x, get_integer_part(y) + s, get_fract_part(y));
         }
         y += grad;
     }
@@ -69,12 +54,16 @@ ret_code_t add_line_wu(T &manager, const Point &a, const Point &b)
 
     if (rc == EXIT_OK)
     {
-        _draw_line_wu(manager, a, b);
+        _add_line_wu(manager, a, b);
     }
     else
     {
-        manager.add_point(a.x, a.y, MAX_INTENSITY);
+        manager.add_point(a.x, a.y, 1);
     }
 
     return rc;
 }
+
+template ret_code_t add_line_wu<Canvas>(Canvas &canvas, const Point &a, const Point &b);
+
+template ret_code_t add_line_wu<Points>(Points &points, const Point &a, const Point &b);

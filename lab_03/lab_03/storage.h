@@ -9,8 +9,6 @@
 #include <QDebug>
 #include <QGraphicsScene>
 
-#define MAX_INTENSITY 255
-
 struct Point
 {
     int x;
@@ -46,10 +44,23 @@ class Canvas
 {
 public:
     QGraphicsScene scene;
+    QBrush brush;
+    QColor color;
+    QPen pen;
 
-    void add_point(int x, int y)
+    Canvas()
     {
-        scene.addLine(x, y, x + 1, y);
+        brush = scene.foregroundBrush();
+        color = brush.color();
+    }
+
+    void add_point(int x, int y, float intensity)
+    {
+        color.setAlphaF(intensity);
+//        brush.setColor(color);
+//        scene.setForegroundBrush(brush)
+        pen.setColor(color);
+        scene.addLine(x, y, x + 1, y, pen);
     }
 };
 

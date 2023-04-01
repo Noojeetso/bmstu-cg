@@ -11,4 +11,10 @@ int get_abs(int value);
 
 short get_sign(int value);
 
+int get_integer_part(double value);
+
+double get_fract_part(double value);
+
+double get_right_fract_part(double value);
+
 #endif // MATH_IMPL_H

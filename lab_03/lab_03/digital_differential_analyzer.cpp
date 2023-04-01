@@ -1,5 +1,4 @@
 #include "digital_differential_analyzer.h"
-#include "QDebug"
 
 template<typename T>
 void _add_line_dda(T &manager, const Point &a, const Point &b)
@@ -30,7 +29,7 @@ void _add_line_dda(T &manager, const Point &a, const Point &b)
 
     for (size_t i = 1; i < length + 1; i++)
     {
-        manager.add_point(int(x), int(y), MAX_INTENSITY);
+        manager.add_point(int(x), int(y), 1);
 
         x += dx;
         y += dy;
@@ -50,12 +49,16 @@ ret_code_t add_line_dda(T &manager, const Point &a, const Point &b)
 
     if (rc == EXIT_OK)
     {
-        _draw_line_dda(manager, a, b);
+        _add_line_dda(manager, a, b);
     }
     else
     {
-        manager.add_point(a.x, a.y, MAX_INTENSITY);
+        manager.add_point(a.x, a.y, 1);
     }
 
     return rc;
 }
+
+template ret_code_t add_line_dda<Canvas>(Canvas &canvas, const Point &a, const Point &b);
+
+template ret_code_t add_line_dda<Points>(Points &points, const Point &a, const Point &b);

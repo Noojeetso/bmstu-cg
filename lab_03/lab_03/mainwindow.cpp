@@ -2,7 +2,6 @@
 #include "ui_mainwindow.h"
 #include <QColorDialog>
 #include <QDebug>
-#include "segment_algorithms.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -44,32 +43,43 @@ ret_code_t get_int_from_field(int &value, const QLineEdit *field)
 template<typename T>
 ret_code_t MainWindow::add_line(T &manager, const Point &a, const Point &b)
 {
-    QString str = this->ui->algo_combobox->currentText();
+//        QString str = this->ui->algo_combobox->currentText();
     int idx = this->ui->algo_combobox->currentIndex();
+
+//    qDebug() << idx << " here\n";
 
     switch (idx)
     {
         case 0:
-            draw_line_dda(manager, a, b);
+            add_line_dda(manager, a, b);
             break;
         case 1:
-            draw_line_bresenham_floating_point(manager, a, b);
+            add_line_bresenham_floating_point(manager, a, b);
             break;
         case 2:
-            draw_line_bresenham_integer(manager, a, b);
+            add_line_bresenham_integer(manager, a, b);
             break;
         case 3:
-            draw_line_bresenham_smooth(manager, a, b);
+            add_line_bresenham_smooth(manager, a, b);
             break;
         case 4:
-            draw_line_bresenham_smooth(manager, a, b);
+            add_line_wu(manager, a, b);
             break;
     }
 
     return EXIT_OK;
 }
 
-void MainWindow::on_draw_seg_clicked()
+//template ret_code_t MainWindow::add_line<Canvas>(Canvas, int, const Point&, const Point&);
+
+template ret_code_t MainWindow::add_line<Canvas>(Canvas &canvas, const Point &a, const Point &b);
+//ret_code_t add_line_canvas(Canvas &canvas, const Point &a, const Point &b)
+//{
+//    MainWindow::add_line(canvas, a, b);
+//}
+//ret_code_t add_line_dda(Canvas &canvas, const Point &a, const Point &b);
+
+void MainWindow::on_draw_seg_clicked(void)
 {
     ret_code_t rc;
     Point a;
@@ -94,12 +104,13 @@ void MainWindow::on_draw_seg_clicked()
 
     if (rc == EXIT_OK)
     {
-        add_line(this->canvas);
+//        add_line_dda(this->canvas, a, b);
+        add_line(this->canvas, a, b);
     }
 }
 
 
-void MainWindow::on_draw_spectre_clicked()
+void MainWindow::on_draw_spectre_clicked(void)
 {
     ret_code_t rc;
     int segment_length;
@@ -141,7 +152,7 @@ void MainWindow::on_draw_spectre_clicked()
 
         if (rc == EXIT_OK)
         {
-            rc = fill_points_array(line, a, b);
+//            rc = fill_points_array(line, a, b);
         }
     }
 

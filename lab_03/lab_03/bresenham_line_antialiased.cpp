@@ -14,7 +14,7 @@ void _add_line_bresenham_smooth(T &manager, const Point &a, const Point &b)
     double f_err;
     double W;
     bool flipped = false;
-    int intensity_levels = MAX_INTENSITY;
+    double intensity_levels = 1;
 
     dx = b.x - a.x;
     dy = b.y - a.y;
@@ -44,7 +44,7 @@ void _add_line_bresenham_smooth(T &manager, const Point &a, const Point &b)
 
     for (int i = 0; i < dx; i++)
     {
-        manager.add_point(x, y, int(f_err));
+        manager.add_point(x, y, f_err);
 
         if (f_err <= W)
         {
@@ -76,12 +76,16 @@ ret_code_t add_line_bresenham_smooth(T &manager, const Point &a, const Point &b)
 
     if (rc == EXIT_OK)
     {
-        _draw_line_bresenham_smooth(manager, a, b);
+        _add_line_bresenham_smooth(manager, a, b);
     }
     else
     {
-        manager.add_point(a.x, a.y, MAX_INTENSITY);
+        manager.add_point(a.x, a.y, 1);
     }
 
     return rc;
 }
+
+template ret_code_t add_line_bresenham_smooth<Canvas>(Canvas &canvas, const Point &a, const Point &b);
+
+template ret_code_t add_line_bresenham_smooth<Points>(Points &points, const Point &a, const Point &b);

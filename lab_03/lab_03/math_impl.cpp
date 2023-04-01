@@ -23,3 +23,18 @@ short get_sign(int value)
         return -1;
     return value > 0;
 }
+
+int get_integer_part(double value)
+{
+    return floor(value);
+}
+
+double get_fract_part(double value)
+{
+    return value - floor(value);
+}
+
+double get_right_fract_part(double value)
+{
+    return 1 - get_fract_part(value);
+}
