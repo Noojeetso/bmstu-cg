@@ -182,6 +182,7 @@ class Ui_MainWindow(object):
         self.init_figure.setText(_translate("MainWindow", "Сбросить"))
         self.rotation_info.setText(_translate("MainWindow", "?"))
         self.scale_info.setText(_translate("MainWindow", "?"))
+        self.input_radius.setText(_translate("MainWindow", "100"))
         self.label_37.setText(_translate("MainWindow", "Радиус:"))
         self.reset_info.setText(_translate("MainWindow", "?"))
         self.menuinfo.setTitle(_translate("MainWindow", "Справка"))

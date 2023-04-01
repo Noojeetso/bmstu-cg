@@ -34,7 +34,6 @@ class GraphicsWidget(QWidget):
         self.graph.resize(self.width, self.height)
 
         if not self.resized:
-            self.graph.move_to_center()
             self.graph.figure.history_prev.clear()
             self.graph.figure.history_next.clear()
             self.resized = True
@@ -53,7 +52,7 @@ class Graph:
     right_point: Point
 
     def __init__(self, width: int, height: int):
-        self.figure = Figure(width // 2, height // 2, 100)
+        self.figure = Figure(0, 0, 100)
         self.canvas_width = width
         self.canvas_height = height
         self.left_point = Point(0, self.canvas_height // 2)
@@ -64,6 +63,11 @@ class Graph:
         self.black = QColor(0, 0, 0, 255)
 
     def draw(self, painter: QPainter):
+        pen = painter.pen()
+        pen.setWidth(2)
+        pen.setCapStyle(Qt.RoundCap)
+        painter.setPen(pen)
+
         last_point = self.figure.astroid.points[0]
         for point in self.figure.astroid.points[1:]:
             self.draw_line_from_points(painter, last_point, point)
@@ -79,10 +83,14 @@ class Graph:
         for line in self.figure.get_lines():
             self.draw_line(painter, line)
 
+        pen.setWidth(1)
+        pen.setCapStyle(Qt.SquareCap)
+        pen.setColor(self.black)
+        painter.setPen(pen)
+
         self.draw_point(painter, self.figure.center)
 
-        self.draw_line_from_points(painter, self.left_point, self.right_point)
-        self.draw_line_from_points(painter, self.bottom_point, self.top_point)
+        self.draw_axes(painter)
 
     def draw_point(self, painter: QPainter, point: Point):
         pen = painter.pen()
@@ -91,7 +99,7 @@ class Graph:
         pen.setColor(self.red)
         painter.setPen(pen)
 
-        x, y = int(point.x), self.canvas_height - int(point.y)
+        x, y = int(point.x + self.canvas_width / 2), self.canvas_height - int(point.y + self.canvas_height / 2)
         painter.drawPoint(x, y)
 
         pen.setWidth(1)
@@ -101,18 +109,25 @@ class Graph:
 
         painter.drawText(x - len(str(point)) * 3, y - 7, str(point))
 
-    def draw_line_from_points(self, painter: QPainter, point_a: Point, point_b: Point, color=Qt):
-        painter.drawLine(int(point_a.x), self.canvas_height - int(point_a.y),
-                         int(point_b.x), self.canvas_height - int(point_b.y))
+    def draw_axes(self, painter: QPainter):
+        painter.drawLine(int(self.left_point.x), self.canvas_height - int(self.left_point.y),
+                         int(self.right_point.x), self.canvas_height - int(self.right_point.y))
+        painter.drawLine(int(self.bottom_point.x), self.canvas_height - int(self.bottom_point.y),
+                         int(self.top_point.x), self.canvas_height - int(self.top_point.y))
+
+    def draw_line_from_points(self, painter: QPainter, point_a: Point, point_b: Point):
+        painter.drawLine(int(point_a.x + self.canvas_width / 2),
+                         self.canvas_height - int(point_a.y + self.canvas_height / 2),
+                         int(point_b.x + self.canvas_width / 2),
+                         self.canvas_height - int(point_b.y + self.canvas_height / 2))
 
     def draw_line(self, painter: QPainter, line: Line):
         point_a = line.start
         point_b = line.end
-        painter.drawLine(int(point_a.x), self.canvas_height - int(point_a.y),
-                         int(point_b.x), self.canvas_height - int(point_b.y))
-
-    def move_to_center(self):
-        self.figure.move_to_center(self.canvas_width / 2, self.canvas_height / 2)
+        painter.drawLine(int(point_a.x + self.canvas_width / 2),
+                         self.canvas_height - int(point_a.y + self.canvas_height / 2),
+                         int(point_b.x + self.canvas_width / 2),
+                         self.canvas_height - int(point_b.y + self.canvas_height / 2))
 
     def resize(self, width: int, height: int):
         """ Process window resize """

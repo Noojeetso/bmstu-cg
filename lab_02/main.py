@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
         self.ui.graphics_widget.graph.figure.history_prev.clear()
         width = self.ui.graphics_widget.graph.canvas_width
         height = self.ui.graphics_widget.graph.canvas_height
-        self.ui.graphics_widget.graph.figure = Figure(width / 2, height / 2, radius)
+        self.ui.graphics_widget.graph.figure = Figure(0, 0, radius)
         self.ui.graphics_widget.update()
 
     def transition_info(self):
