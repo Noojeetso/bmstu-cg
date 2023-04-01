@@ -51,7 +51,6 @@ ret_code_t add_line_dda(T &manager, const Point &a, const Point &b)
     if (rc == EXIT_OK)
     {
         _draw_line_dda(manager, a, b);
-//        qDebug() << "len: " << points->length << "\n";
     }
     else
     {

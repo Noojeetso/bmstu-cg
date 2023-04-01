@@ -24,9 +24,6 @@ public:
     Lines lines;
     Point a;
     Point b;
-//    QPainter *painter;
-
-//    std::vector<std::vector<Point*>> lines;
 
 protected:
     virtual void paintEvent(QPaintEvent *);

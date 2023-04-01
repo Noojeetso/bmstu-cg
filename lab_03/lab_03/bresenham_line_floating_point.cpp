@@ -3,8 +3,6 @@
 template<typename T>
 void _add_line_bresenham_floating_point(T &manager, const Point &a, const Point &b)
 {
-//    QColor color = origin_color;
-//    QPen pen = painter.pen();
     int tmp;
     int dx;
     int dy;
@@ -42,9 +40,6 @@ void _add_line_bresenham_floating_point(T &manager, const Point &a, const Point 
 
     for (int i = 1; i < dx + 1; i++)
     {
-//        color.setAlpha(MAX_INTENSITY);
-//        pen.setColor(color);
-//        points->push_back({x, y, MAX_INTENSITY});
         manager.add_point(x, y, MAX_INTENSITY);
 
         if (f_err >= 0)
@@ -74,7 +69,6 @@ template<typename T>
 ret_code_t add_line_bresenham_floating_point(T &manager, const Point &a, const Point &b)
 {
     ret_code_t rc;
-//    QPen pen = painter->pen();
 
     rc = check_segment(a, b);
 
@@ -84,9 +78,6 @@ ret_code_t add_line_bresenham_floating_point(T &manager, const Point &a, const P
     }
     else
     {
-//        pen.setColor(line.color);
-//        painter->setPen(pen);
-//        painter->drawPoint(line.a.x, line.a.y);
         manager.add_point(a.x, a.y, MAX_INTENSITY);
     }
 

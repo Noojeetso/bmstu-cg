@@ -41,7 +41,7 @@ void _add_line_bresenham_smooth(T &manager, const Point &a, const Point &b)
 
     x = a.x;
     y = a.y;
-//    while (x <= b.x || y <= b.y)
+
     for (int i = 0; i < dx; i++)
     {
         manager.add_point(x, y, int(f_err));
