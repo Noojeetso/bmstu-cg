@@ -2,3 +2,6 @@ old/
 __pycache__/
 venv/
 .idea/
+build*
+*.user
+*.ts
