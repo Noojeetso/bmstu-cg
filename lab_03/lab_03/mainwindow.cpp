@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QColorDialog>
 #include <QDebug>
+#include "qcustomplot.h"
+#include "graph.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -9,6 +11,26 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->ui->graphicsView->setScene(&this->canvas.scene);
+
+    QSize size;
+    size = this->ui->graphicsView->size();
+//    canvas.setViewport(this->ui->graphicsView);
+    canvas.set_size(size);
+
+    QPixmap pixmap(16, 16);
+    QPainter painter(&pixmap);
+
+    pixmap.fill(canvas.segment_color);
+    this->ui->change_seg_color->setIcon(pixmap);
+    painter.drawRect(0, 0, 15, 15);
+
+    connect(this->ui->action, &QAction::triggered, [=]() {
+        about();
+    });
+
+//    pixmap.fill(canvas.bg_color);
+//    painter.drawRect(0, 0, 15, 15);
+//    this->ui->change_bg_color->setIcon(pixmap);
 }
 
 MainWindow::~MainWindow()
@@ -16,10 +38,31 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+    QMainWindow::resizeEvent(event);
+
+    qDebug() << event << "\n";
+    QSize size;
+    size = this->ui->graphicsView->size();
+    canvas.set_size(size);
+
+//    QRectF rect;
+//    rect = this->ui->graphicsView->sceneRect();
+//    canvas.set_size(rect.height(), rect.width());
+}
 
 void MainWindow::on_change_seg_color_clicked()
 {
-    QColor color = QColorDialog::getColor();
+    QColor color;
+    color = QColorDialog::getColor(color, this, "Выберите цвет");
+
+    QPixmap pixmap(16, 16);
+    QPainter painter(&pixmap);
+    pixmap.fill(color);
+    painter.drawRect(0, 0, 15, 15);
+    this->ui->change_seg_color->setIcon(pixmap);
+    canvas.set_segment_color(color);
 }
 
 ret_code_t get_int_from_field(int &value, const QLineEdit *field)
@@ -40,13 +83,29 @@ ret_code_t get_int_from_field(int &value, const QLineEdit *field)
     return rc;
 }
 
+ret_code_t get_size_t_from_field(size_t &value, const QLineEdit *field)
+{
+    ret_code_t rc;
+    QString str;
+    bool ok;
+
+    if (field == NULL)
+    {
+        return ERR_NULL_PTR;
+    }
+
+    str = field->text();
+    value = str.toULongLong(&ok);
+    rc = ok ? EXIT_OK : ERR_INCORRECT_DATA;
+
+    return rc;
+}
+
 template<typename T>
 ret_code_t MainWindow::add_line(T &manager, const Point &a, const Point &b)
 {
 //        QString str = this->ui->algo_combobox->currentText();
     int idx = this->ui->algo_combobox->currentIndex();
-
-//    qDebug() << idx << " here\n";
 
     switch (idx)
     {
@@ -60,7 +119,7 @@ ret_code_t MainWindow::add_line(T &manager, const Point &a, const Point &b)
             add_line_bresenham_integer(manager, a, b);
             break;
         case 3:
-            add_line_bresenham_smooth(manager, a, b);
+            add_line_bresenham_antialiased(manager, a, b);
             break;
         case 4:
             add_line_wu(manager, a, b);
@@ -70,14 +129,7 @@ ret_code_t MainWindow::add_line(T &manager, const Point &a, const Point &b)
     return EXIT_OK;
 }
 
-//template ret_code_t MainWindow::add_line<Canvas>(Canvas, int, const Point&, const Point&);
-
 template ret_code_t MainWindow::add_line<Canvas>(Canvas &canvas, const Point &a, const Point &b);
-//ret_code_t add_line_canvas(Canvas &canvas, const Point &a, const Point &b)
-//{
-//    MainWindow::add_line(canvas, a, b);
-//}
-//ret_code_t add_line_dda(Canvas &canvas, const Point &a, const Point &b);
 
 void MainWindow::on_draw_seg_clicked(void)
 {
@@ -104,11 +156,10 @@ void MainWindow::on_draw_seg_clicked(void)
 
     if (rc == EXIT_OK)
     {
-//        add_line_dda(this->canvas, a, b);
         add_line(this->canvas, a, b);
+        this->canvas.update_image();
     }
 }
-
 
 void MainWindow::on_draw_spectre_clicked(void)
 {
@@ -152,10 +203,79 @@ void MainWindow::on_draw_spectre_clicked(void)
 
         if (rc == EXIT_OK)
         {
-//            rc = fill_points_array(line, a, b);
+            add_line(this->canvas, a, b);
+            this->canvas.update_image();
         }
     }
 
     delete line;
+}
+
+void MainWindow::on_analyze_speed_clicked()
+{
+    ret_code_t rc;
+    size_t segment_length;
+    size_t iterations_amount;
+
+    rc = get_size_t_from_field(iterations_amount, this->ui->iter_amount);
+
+    if (rc == EXIT_OK)
+    {
+        rc = get_size_t_from_field(segment_length, this->ui->test_seg_length);
+    }
+
+    if (rc == EXIT_OK)
+    {
+        Graph *graph = new Graph(analyze_speed, iterations_amount, segment_length, NULL);
+    //    graph.setModal(true);
+        graph->setWindowModality(Qt::WindowModal);
+        graph->show();
+    }
+}
+
+
+void MainWindow::on_analyze_steps_clicked()
+{
+    ret_code_t rc;
+    size_t segment_length;
+    size_t iterations_amount;
+
+    rc = get_size_t_from_field(iterations_amount, this->ui->iter_amount);
+
+    if (rc == EXIT_OK)
+    {
+        rc = get_size_t_from_field(segment_length, this->ui->test_seg_length);
+    }
+
+    if (rc == EXIT_OK)
+    {
+        Graph *graph = new Graph(analyze_stepping, iterations_amount, segment_length, NULL);
+    //    graph.setModal(true);
+        graph->setWindowModality(Qt::WindowModal);
+        graph->show();
+    }
+}
+
+
+void MainWindow::about(void)
+{
+    QMessageBox::about(this, "О программе", "Программа использует различные методы для отривоки отрезков:\n"
+                                            "Система координат оконная\n"
+                                            "Ось абсцисс направлена слева направо\n"
+                                            "Ось ординат направлена сверху вниз\n\n"
+                                            "Анализ ступенчатости:\n"
+                                            "Необходимо задать длину отрезка для анализа\n"
+                                            "Проверка осуществляется для отрезков с углом наклона\n"
+                                            "от 0 до 360 градусов с шагом 1 градус\n\n"
+                                            "Анализ скорости работы:\n"
+                                            "Необходимо задать длину отрезка для анализа и количество итераций\n"
+                                            "Проверка осуществляется для отрезков с углом наклона\n"
+                                            "от 0 до 360 градусов с шагом 36 градусов");
+}
+
+
+void MainWindow::on_clear_screen_clicked()
+{
+    this->canvas.clear_image();
 }
 

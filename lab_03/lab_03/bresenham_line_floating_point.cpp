@@ -3,42 +3,31 @@
 template<typename T>
 void _add_line_bresenham_floating_point(T &manager, const Point &a, const Point &b)
 {
-    int tmp;
-    int dx;
-    int dy;
-    int x;
-    int y;
-    short sx;
-    short sy;
-    double tg;
     double f_err;
-    bool flipped = false;
 
-    dx = b.x - a.x;
-    dy = b.y - a.y;
+    int dx = b.x - a.x;
+    int dy = b.y - a.y;
 
-    sx = get_sign(dx);
-    sy = get_sign(dy);
+    const short sx = get_sign(dx);
+    const short sy = get_sign(dy);
 
     dx = get_abs(dx);
     dy = get_abs(dy);
 
-    if (dy > dx)
+    const bool flipped = dx < dy;
+    if (flipped)
     {
-        tmp = dx;
-        dx = dy;
-        dy = tmp;
-        flipped = true;
+        std::swap(dx, dy);
     }
 
-    tg = (double)dy / dx;
+    const double tg = (double)dy / dx;
 
     f_err = tg - 0.5;
 
-    x = a.x;
-    y = a.y;
+    int x = a.x;
+    int y = a.y;
 
-    for (int i = 1; i < dx + 1; i++)
+    for (int i = 0; i < dx; i++)
     {
         manager.add_point(x, y, 1);
 
@@ -50,18 +39,11 @@ void _add_line_bresenham_floating_point(T &manager, const Point &a, const Point 
                 y += sy;
             f_err -= 1;
         }
-        if (f_err <= 0)
-        {
-            if (flipped)
-                y += sy;
-            else
-                x += sx;
-            f_err += tg;
-        }
-
-        #ifdef STEP_COUNT
-        step_counter++;
-        #endif
+        if (flipped)
+            y += sy;
+        else
+            x += sx;
+        f_err += tg;
     }
 }
 
@@ -87,3 +69,5 @@ ret_code_t add_line_bresenham_floating_point(T &manager, const Point &a, const P
 template ret_code_t add_line_bresenham_floating_point<Canvas>(Canvas &canvas, const Point &a, const Point &b);
 
 template ret_code_t add_line_bresenham_floating_point<Points>(Points &points, const Point &a, const Point &b);
+
+template ret_code_t add_line_bresenham_floating_point<DummyManager>(DummyManager &manager, const Point &a, const Point &b);

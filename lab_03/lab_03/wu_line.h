@@ -14,4 +14,6 @@ extern template ret_code_t add_line_wu<Canvas>(Canvas &canvas, const Point &a, c
 
 extern template ret_code_t add_line_wu<Points>(Points &points, const Point &a, const Point &b);
 
+extern template ret_code_t add_line_wu<DummyManager>(DummyManager &manager, const Point &a, const Point &b);
+
 #endif // WU_LINE_H

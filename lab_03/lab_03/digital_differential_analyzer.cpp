@@ -3,16 +3,14 @@
 template<typename T>
 void _add_line_dda(T &manager, const Point &a, const Point &b)
 {
-    unsigned abs_x;
-    unsigned abs_y;
     double length;
     double dx;
     double dy;
     double x;
     double y;
 
-    abs_x = get_abs(b.x - a.x);
-    abs_y = get_abs(b.y - a.y);
+    const unsigned abs_x = get_abs(b.x - a.x);
+    const unsigned abs_y = get_abs(b.y - a.y);
 
     length = abs_x;
 
@@ -27,16 +25,12 @@ void _add_line_dda(T &manager, const Point &a, const Point &b)
     x = a.x;
     y = a.y;
 
-    for (size_t i = 1; i < length + 1; i++)
+    for (size_t i = 0; i < length; i++)
     {
         manager.add_point(int(x), int(y), 1);
 
         x += dx;
         y += dy;
-
-        #ifdef STEP_COUNT
-        step_counter++;
-        #endif
     }
 }
 
@@ -62,3 +56,5 @@ ret_code_t add_line_dda(T &manager, const Point &a, const Point &b)
 template ret_code_t add_line_dda<Canvas>(Canvas &canvas, const Point &a, const Point &b);
 
 template ret_code_t add_line_dda<Points>(Points &points, const Point &a, const Point &b);
+
+template ret_code_t add_line_dda<DummyManager>(DummyManager &manager, const Point &a, const Point &b);

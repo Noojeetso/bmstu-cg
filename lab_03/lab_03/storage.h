@@ -8,6 +8,7 @@
 #include <QString>
 #include <QDebug>
 #include <QGraphicsScene>
+#include <QGraphicsView>
 
 struct Point
 {
@@ -32,6 +33,11 @@ public:
     {
         data.push_back(Point{x, y, intensity});
     }
+
+    void clear(void)
+    {
+        data.clear();
+    }
 };
 
 class Lines
@@ -44,24 +50,65 @@ class Canvas
 {
 public:
     QGraphicsScene scene;
-    QBrush brush;
-    QColor color;
     QPen pen;
+    QColor segment_color;
+    QColor bg_color;
+    QImage image;
 
     Canvas()
     {
-        brush = scene.foregroundBrush();
-        color = brush.color();
+        segment_color = Qt::black;
+        bg_color = Qt::white;
+    }
+
+    void set_size(QSize &size)
+    {
+        image = QImage(size, QImage::Format_ARGB32);
+        qDebug() << "resized: " << size << "\n";
+        image.fill(bg_color);
+    }
+
+    void set_size(int x, int y)
+    {
+        QImage image = QImage(x, y, QImage::Format_ARGB32);
+        qDebug() << "resized: " << x << " " << y << "\n";
+        image.fill(bg_color);
+    }
+
+    void clear_scene(void)
+    {
+        scene.clear();
+    }
+
+    void clear_image(void)
+    {
+        image.fill(bg_color);
+        update_image();
+    }
+
+    void update_image(void)
+    {
+//        scene.clear();
+        scene.addPixmap(QPixmap::fromImage(image));
+    }
+
+    void set_segment_color(QColor &new_color)
+    {
+        segment_color = new_color;
+        pen.setColor(segment_color);
     }
 
     void add_point(int x, int y, float intensity)
     {
-        color.setAlphaF(intensity);
-//        brush.setColor(color);
-//        scene.setForegroundBrush(brush)
-        pen.setColor(color);
-        scene.addLine(x, y, x + 1, y, pen);
+        segment_color.setAlphaF(intensity);
+        image.setPixel(x, y, segment_color.rgba());
     }
+};
+
+class DummyManager
+{
+public:
+    void add_point([[maybe_unused]] int x, [[maybe_unused]] int y, [[maybe_unused]] float intensity){}
 };
 
 #endif // STORAGE_H

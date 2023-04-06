@@ -14,4 +14,6 @@ extern template ret_code_t add_line_bresenham_integer(Canvas &canvas, const Poin
 
 extern template ret_code_t add_line_bresenham_integer(Points &points, const Point &a, const Point &b);
 
+extern template ret_code_t add_line_bresenham_integer<DummyManager>(DummyManager &manager, const Point &a, const Point &b);
+
 #endif // BRESENHAM_LINE_INTEGER_H
