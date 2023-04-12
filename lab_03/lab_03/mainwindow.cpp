@@ -124,6 +124,9 @@ ret_code_t MainWindow::add_line(T &manager, const Point &a, const Point &b)
         case 4:
             add_line_wu(manager, a, b);
             break;
+        case 5:
+            add_line_dda(manager, a, b);
+            break;
     }
 
     return EXIT_OK;
@@ -191,7 +194,7 @@ void MainWindow::on_draw_spectre_clicked(void)
         rc = get_int_from_field(step_degrees, this->ui->step_degrees);
     }
 
-    for (double current_angle_degrees = 0; rc == EXIT_OK && current_angle_degrees < 360; current_angle_degrees += step_degrees)
+    for (double current_angle_degrees = 0; rc == EXIT_OK && current_angle_degrees < 180; current_angle_degrees += step_degrees)
     {
         cos_a = get_cos(current_angle_degrees);
         sin_a = get_sin(current_angle_degrees);
@@ -259,8 +262,9 @@ void MainWindow::on_analyze_steps_clicked()
 
 void MainWindow::about(void)
 {
-    QMessageBox::about(this, "О программе", "Программа использует различные методы для отривоки отрезков:\n"
-                                            "Система координат оконная\n"
+    QMessageBox::about(this, "О программе", "Программа использует различные методы для отрисовки отрезков:\n"
+                                            "На выбор пользователя предлагается нарисовать отрезок, спектр отрезков или провести анализ алгоритмов отображения отрезков\n\n"
+                                            "Система координат оконная (центр в левом верхнем углу)\n"
                                             "Ось абсцисс направлена слева направо\n"
                                             "Ось ординат направлена сверху вниз\n\n"
                                             "Анализ ступенчатости:\n"
@@ -268,7 +272,7 @@ void MainWindow::about(void)
                                             "Проверка осуществляется для отрезков с углом наклона\n"
                                             "от 0 до 360 градусов с шагом 1 градус\n\n"
                                             "Анализ скорости работы:\n"
-                                            "Необходимо задать длину отрезка для анализа и количество итераций\n"
+                                            "Необходимо задать длину отрезка для анализа и количество итераций для повышения точности\n"
                                             "Проверка осуществляется для отрезков с углом наклона\n"
                                             "от 0 до 360 градусов с шагом 36 градусов");
 }

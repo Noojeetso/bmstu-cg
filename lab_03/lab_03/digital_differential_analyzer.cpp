@@ -27,7 +27,7 @@ void _add_line_dda(T &manager, const Point &a, const Point &b)
 
     for (size_t i = 0; i < length; i++)
     {
-        manager.add_point(int(x), int(y), 1);
+        manager.add_point(round(x), round(y), 1);
 
         x += dx;
         y += dy;

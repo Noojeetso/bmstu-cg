@@ -22,37 +22,37 @@ void _add_line_wu(T &manager, const Point &a, const Point &b) {
     const double gradient = (dx == 0) ? 1 : dy / dx;
 
     // handle first endpoint
-    double x_end = round(x1);
-    double y_end = y1 + gradient * (x_end - x1);
-    double x_gap = get_right_fract_part(x1 + 0.5);
-    double x_px_loop1 = x_end;
-    double y_px_loop1 = get_integer_part(y_end);
+//    double x_end = round(x1);
+//    double y_end = y1 + gradient * (x_end - x1);
+//    double x_gap = get_right_fract_part(x1 + 0.5);
+//    double x_px_loop1 = x_end;
+//    double y_px_loop1 = get_integer_part(y_end);
 
-    if (steep) {
-        manager.add_point(y_px_loop1,     x_px_loop1,  get_right_fract_part(y_end) * x_gap);
-        manager.add_point(y_px_loop1 + 1, x_px_loop1,  get_fract_part(y_end) * x_gap);
-    } else {
-        manager.add_point(x_px_loop1, y_px_loop1,     get_right_fract_part(y_end) * x_gap);
-        manager.add_point(x_px_loop1, y_px_loop1 + 1, get_fract_part(y_end) * x_gap);
-    }
+//    if (steep) {
+//        manager.add_point(y_px_loop1,     x_px_loop1,  get_right_fract_part(y_end) * x_gap);
+//        manager.add_point(y_px_loop1 + 1, x_px_loop1,  get_fract_part(y_end) * x_gap);
+//    } else {
+//        manager.add_point(x_px_loop1, y_px_loop1,     get_right_fract_part(y_end) * x_gap);
+//        manager.add_point(x_px_loop1, y_px_loop1 + 1, get_fract_part(y_end) * x_gap);
+//    }
 
     // first y-intersection for the main loop
-    double y_intersection = y_end + gradient;
+//    double y_intersection = y_end + gradient;
 
     // handle second endpoint
-    x_end = round(x2);
-    y_end = y2 + gradient * (x_end - x2);
-    x_gap = get_fract_part(x2 + 0.5);
-    double x_px_loop2 = x_end;
-    double y_px_loop2 = get_integer_part(y_end);
+//    x_end = round(x2);
+//    y_end = y2 + gradient * (x_end - x2);
+//    x_gap = get_fract_part(x2 + 0.5);
+//    double x_px_loop2 = x_end;
+//    double y_px_loop2 = get_integer_part(y_end);
 
-    if (steep) {
-        manager.add_point(y_px_loop2,     x_px_loop2,  get_right_fract_part(y_end) * x_gap);
-        manager.add_point(y_px_loop2 + 1, x_px_loop2,  get_fract_part(y_end) * x_gap);
-    } else {
-        manager.add_point(x_px_loop2, y_px_loop2,     get_right_fract_part(y_end) * x_gap);
-        manager.add_point(x_px_loop2, y_px_loop2 + 1, get_fract_part(y_end) * x_gap);
-    }
+//    if (steep) {
+//        manager.add_point(y_px_loop2,     x_px_loop2,  get_right_fract_part(y_end) * x_gap);
+//        manager.add_point(y_px_loop2 + 1, x_px_loop2,  get_fract_part(y_end) * x_gap);
+//    } else {
+//        manager.add_point(x_px_loop2, y_px_loop2,     get_right_fract_part(y_end) * x_gap);
+//        manager.add_point(x_px_loop2, y_px_loop2 + 1, get_fract_part(y_end) * x_gap);
+//    }
 
     // main loop
     if (steep)

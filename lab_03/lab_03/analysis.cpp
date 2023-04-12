@@ -301,7 +301,7 @@ void analyze_stepping(QCustomPlot *plot, [[maybe_unused]] size_t iterations_amou
 
     plot->graph(0)->setName("ЦДА");
     plot->graph(1)->setName("Брезенхем (числа с плавающей точкой)");
-    plot->graph(2)->setName("Bresenham (целые числа)");
+    plot->graph(2)->setName("Брезенхем (целые числа)");
     plot->xAxis->setLabel("Угол в градусах");
     plot->yAxis->setLabel("Количество ступенек");
 

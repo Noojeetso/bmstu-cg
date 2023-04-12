@@ -36,18 +36,19 @@ void _add_line_bresenham_antialiased(T &manager, const Point &a, const Point &b)
     for (int i = 0; i < dx; i++)
     {
         manager.add_point(x, y, f_err);
-
-        if (f_err <= W)
-        {
+        if (f_err <= W) {
             if (flipped)
                 y += sy;
             else
                 x += sx;
             f_err += tg;
         }
-        x += sx;
-        y += sy;
-        f_err -= W;
+        else {
+            x += sx;
+            y += sy;
+            f_err -= W;
+        }
+
     }
 }
 
